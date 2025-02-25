@@ -34,6 +34,7 @@ def main(cfg):
 
     # check preloading
     if cfg.dataset.preload_path:
+        print(f"cfg.dataset.preload_path = {cfg.dataset.preload_path}")
         assert os.path.exists(cfg.dataset.preload_path), 'Preload path does not exist.'
         print_msg('Preloading is enabled using {}'.format(cfg.dataset.preload_path))
 

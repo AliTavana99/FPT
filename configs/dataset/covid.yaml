@@ -1,7 +1,7 @@
 name: covid
-data_path: /path/to/dataset/COVID/
-preload_path: ./preload_data/covid
-save_path: ./runs/covid
+data_path: /kaggle/working/COVID_IEEE
+preload_path: /kaggle/working/covid_preload_data
+save_path: /kaggle/working/covid_runs
 input_size: 512 # image resolution for the LPM
 num_classes: 3 # number of classes
 mean: [0.498341828584671, 0.4986386299133301, 0.49894729256629944] # 'auto' or a list of three numbers for RGB

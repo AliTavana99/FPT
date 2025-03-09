@@ -65,7 +65,7 @@ def my_data(src_root, dst_root, val_ratio=0.1, seed=42):
 
 # Example usage
 if __name__ == '__main__':
-    src_path = Path("/kaggle/input/my-dataset")  # Change this to your dataset path
+    src_path = Path("/kaggle/input/pediatric-pneumonia-chest-xray/Pediatric Chest X-ray Pneumonia")  # Change this to your dataset path
     dst_path = Path("/kaggle/working/my-dataset-split")
     
     my_data(src_path, dst_path, val_ratio=0.1)

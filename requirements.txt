@@ -4,5 +4,5 @@ PyYAML
 torcheval
 hydra-core
 safetensors
-torchvision=
-transformers=
+torchvision
+transformers

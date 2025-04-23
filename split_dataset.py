@@ -57,7 +57,7 @@ def split_dataset(src_root, dst_root, classes, split_ratios, seed=42):
 
 if __name__ == '__main__':
     # Define source and destination paths using pathlib for ease of use.
-    src_path = Path('/kaggle/input/covid-cxr-image-dataset-research/COVID_IEEE')
+    src_path = Path('/kaggle/input/COVID_IEEE')
     dst_path = Path('/kaggle/working/COVID_IEEE')
     
     # Define the classes (subdirectories in the source dataset)

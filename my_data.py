@@ -2,187 +2,165 @@ import os
 import shutil
 import random
 from pathlib import Path
+import logging
 
-
-def count_images(dataset_root):
-    """
-    Count and print the number of images in each split and class.
-    
-    Args:
-        dataset_root (str): Root directory of the dataset.
-    """
-    splits = ['train', 'validation', 'test']
-    
-    # Get class names from train directory
-    try:
-        classes = os.listdir(os.path.join(dataset_root, 'train'))
-    except FileNotFoundError:
-        print(f"Directory {os.path.join(dataset_root, 'train')} not found.")
-        return
-    
-    # Count images in each split and class
-    for split in splits:
-        print(f"{split} set:")
-        split_total = 0
-        
-        for class_name in classes:
-            dir_path = os.path.join(dataset_root, split, class_name)
-            
-            if os.path.exists(dir_path):
-                num_files = len(os.listdir(dir_path))
-                print(f"  {class_name}: {num_files} images")
-                split_total += num_files
-            else:
-                print(f"  {class_name}: 0 images (directory not found)")
-        
-        print(f"  Total: {split_total} images")
-        print()
-
-
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def create_directory_structure(destination_root, classes):
     """
     Create the necessary directory structure for the dataset.
-    
-    Args:
-        destination_root (str): Root directory where the dataset will be stored.
-        classes (list): List of class names.
     """
     for split in ['train', 'validation', 'test']:
         for class_name in classes:
-            os.makedirs(os.path.join(destination_root, split, class_name), exist_ok=True)
+            folder_path = os.path.join(destination_root, split, class_name)
+            os.makedirs(folder_path, exist_ok=True)
+            logger.info(f"Created directory: {folder_path}")
 
-
-def copy_dataset(source_root, destination_root):
+def move_files_between_splits(source_root, destination_root, source_split, target_split, ratio, classes, random_seed=42):
     """
-    Copy the dataset from source_root to destination_root preserving the structure.
-    
-    Args:
-        source_root (str): Root directory of the original dataset.
-        destination_root (str): Root directory where the dataset will be copied.
-        
-    Returns:
-        list: List of class names.
-    """
-    # Get class names from train directory
-    classes = os.listdir(os.path.join(source_root, 'train'))
-    
-    # Create destination directory structure
-    create_directory_structure(destination_root, classes)
-    
-    # Copy files from source to destination
-    for split in ['train', 'test']:
-        for class_name in classes:
-            source_dir = os.path.join(source_root, split, class_name)
-            dest_dir = os.path.join(destination_root, split, class_name)
-            
-            # Get all files
-            files = os.listdir(source_dir)
-            
-            # Copy files
-            for file in files:
-                source_path = os.path.join(source_dir, file)
-                dest_path = os.path.join(dest_dir, file)
-                shutil.copy2(source_path, dest_path)
-    
-    return classes
-
-            
-def move_files(source_dir, dest_dir, ratio, random_seed=42):
-    """
-    Move a random subset of files from source_dir to dest_dir.
-    
-    Args:
-        source_dir (str): Source directory containing the files.
-        dest_dir (str): Destination directory where files will be moved.
-        ratio (float): Ratio of files to move (0-1).
-        random_seed (int): Random seed for reproducibility.
-    
-    Returns:
-        int: Number of files moved.
+    Move a specific ratio of files from source_split to target_split.
     """
     random.seed(random_seed)
+    total_moved = 0
     
-    # Get all files in the source directory
-    files = os.listdir(source_dir)
+    for class_name in classes:
+        source_dir = os.path.join(source_root, source_split, class_name)
+        target_dir = os.path.join(destination_root, target_split, class_name)
+        
+        # Ensure directories exist
+        os.makedirs(target_dir, exist_ok=True)
+        
+        # Get all files in the source directory
+        try:
+            files = [f for f in os.listdir(source_dir) if os.path.isfile(os.path.join(source_dir, f))]
+            num_files = len(files)
+            
+            if num_files == 0:
+                logger.warning(f"No files found in {source_dir}")
+                continue
+                
+            # Calculate number of files to move
+            num_to_move = max(1, int(num_files * ratio))
+            files_to_move = random.sample(files, num_to_move)
+            
+            logger.info(f"Moving {num_to_move} files from {source_dir} to {target_dir}")
+            
+            # Move the files
+            for file in files_to_move:
+                source_path = os.path.join(source_dir, file)
+                dest_path = os.path.join(target_dir, file)
+                
+                try:
+                    shutil.copy2(source_path, dest_path)
+                    os.remove(source_path)
+                    total_moved += 1
+                except Exception as e:
+                    logger.error(f"Failed to move {file}: {str(e)}")
+            
+        except Exception as e:
+            logger.error(f"Error processing directory {source_dir}: {str(e)}")
     
-    # Calculate number of files to move
-    num_files_to_move = int(len(files) * ratio)
-    print(f"aljhsdfblads : {num_files_to_move}")
-    
-    # Randomly select files to move
-    files_to_move = random.sample(files, num_files_to_move)
-    
-    # Move files
-    for file in files_to_move:
-        source_path = os.path.join(source_dir, file)
-        dest_path = os.path.join(dest_dir, file)
-        shutil.move(source_path, dest_path)
-    
-    return num_files_to_move
+    return total_moved
 
-def reorganize_dataset(source_root, destination_root, source_split='test', target_split='train', move_ratio=0.1, random_seed=42):
+def setup_dataset(original_path, target_path, val_from_test_ratio=0.1, random_seed=42):
     """
-    Copy the dataset and reorganize by moving files between splits.
+    Set up the dataset with train, test, and validation splits.
     
     Args:
-        source_root (str): Root directory of the original dataset.
-        destination_root (str): Root directory where the reorganized dataset will be stored.
-        source_split (str): Source folder for moving files ('train' or 'test').
-        target_split (str): Target folder to move files to ('train', 'validation', or 'test').
-        move_ratio (float): Ratio of files to move (0-1).
-        random_seed (int): Random seed for reproducibility.
-        
-    Returns:
-        int: Total number of files moved.
+        original_path: Path to the original dataset
+        target_path: Path where the reorganized dataset will be stored
+        val_from_test_ratio: Ratio of test files to move to validation
+        random_seed: Random seed for reproducibility
     """
-    # Copy dataset and get class names
-    classes = copy_dataset(source_root, destination_root)
+    # Get class names
+    try:
+        classes = os.listdir(os.path.join(original_path, 'train'))
+        logger.info(f"Found classes: {classes}")
+    except Exception as e:
+        logger.error(f"Failed to get classes: {str(e)}")
+        return False
     
-    # Move files from source_split to target_split
-    files_moved = 0
-    for class_name in classes:
-        source_dir = os.path.join(destination_root, source_split, class_name)
-        dest_dir = os.path.join(destination_root, target_split, class_name)
+    # Create directory structure
+    create_directory_structure(target_path, classes)
+    
+    # First, copy all files to maintain the original structure
+    for split in ['train', 'test']:
+        for class_name in classes:
+            source_class_dir = os.path.join(original_path, split, class_name)
+            target_class_dir = os.path.join(target_path, split, class_name)
+            
+            try:
+                # Get all files
+                files = [f for f in os.listdir(source_class_dir) if os.path.isfile(os.path.join(source_class_dir, f))]
+                
+                logger.info(f"Copying {len(files)} files from {source_class_dir} to {target_class_dir}")
+                
+                # Copy files
+                for file in files:
+                    source_file = os.path.join(source_class_dir, file)
+                    target_file = os.path.join(target_class_dir, file)
+                    shutil.copy2(source_file, target_file)
+            except Exception as e:
+                logger.error(f"Error copying files for {class_name} in {split}: {str(e)}")
+    
+    # Create validation set by moving files from test
+    moved_to_val = move_files_between_splits(
+        target_path, target_path, 
+        'test', 'validation', 
+        val_from_test_ratio, classes, random_seed
+    )
+    logger.info(f"Moved {moved_to_val} files from test to validation")
+    
+    return True
+
+def count_files_in_dataset(dataset_path):
+    """Print statistics about the dataset."""
+    try:
+        classes = os.listdir(os.path.join(dataset_path, 'train'))
         
-        files_moved += move_files(source_dir, dest_dir, move_ratio, random_seed)
-    
-    return files_moved
+        for split in ['train', 'validation', 'test']:
+            total = 0
+            print(f"\n{split.upper()} SET:")
+            
+            for class_name in classes:
+                class_dir = os.path.join(dataset_path, split, class_name)
+                if os.path.exists(class_dir):
+                    files = [f for f in os.listdir(class_dir) if os.path.isfile(os.path.join(class_dir, f))]
+                    file_count = len(files)
+                    total += file_count
+                    print(f"  {class_name}: {file_count} files")
+                else:
+                    print(f"  {class_name}: Directory not found")
+            
+            print(f"  TOTAL: {total} files")
+    except Exception as e:
+        print(f"Error counting files: {str(e)}")
 
 def main():
-    """
-    Main function to execute the dataset reorganization.
-    """
     # Define paths
-    source_root = '/kaggle/input/labeled-chest-xray-images/chest_xray'
-    destination_root = '/kaggle/working/labeled-chest-xray-images'
+    original_dataset = '/kaggle/input/labeled-chest-xray-images/chest_xray'
+    target_dataset = '/kaggle/working/labeled-chest-xray-images'
     
-    # Set parameters - modify these to change the source and target of the split
-    source_split = 'test'    # Source for moving files ('train' or 'test')
-    target_split = 'train'   # Target to move files to ('train', 'validation', or 'test')
-    move_ratio = 0.15         # Ratio of files to move
-    random_seed = 42         # Random seed for reproducibility
+    # Parameters
+    # Change this to modify where validation data comes from
+    val_from_test_ratio = 0.1  # Portion of test data to move to validation
     
-    # To move files from train to validation instead, change these parameters:
-    # source_split = 'train'
-    # target_split = 'validation'
+    # To create validation from train instead, set:
+    # val_from_test_ratio = 0
+    # val_from_train_ratio = 0.1 (and add this parameter to the setup_dataset function call)
     
-    # Reorganize dataset
-    files_moved = reorganize_dataset(
-        source_root, 
-        destination_root, 
-        source_split, 
-        target_split, 
-        move_ratio, 
-        random_seed
-    )
+    random_seed = 42
     
-    print(f"Moved {files_moved} files from {source_split} to {target_split}")
-    print()
+    print(f"Setting up dataset from {original_dataset} to {target_dataset}")
+    success = setup_dataset(original_dataset, target_dataset, val_from_test_ratio, random_seed)
     
-    # Print statistics
-    print("Dataset statistics:")
-    count_images(destination_root)
+    if success:
+        print("\nDataset setup complete. File counts:")
+        count_files_in_dataset(target_dataset)
+    else:
+        print("Dataset setup failed. Check logs for details.")
 
 if __name__ == "__main__":
     main()

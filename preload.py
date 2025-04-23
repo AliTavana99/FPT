@@ -42,7 +42,7 @@ def generate_dataset(cfg):
 
     train_path = os.path.join(data_path, 'train')
     test_path = os.path.join(data_path, 'test')
-    val_path = os.path.join(data_path, 'val')
+    val_path = os.path.join(data_path, 'validation')
 
     preprocess = transforms.Compose([
         transforms.Resize((cfg.dataset.input_size, cfg.dataset.input_size)),

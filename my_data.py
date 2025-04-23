@@ -145,7 +145,7 @@ def main():
     
     # Parameters
     # Change this to modify where validation data comes from
-    val_from_test_ratio = 0.1  # Portion of test data to move to validation
+    val_from_test_ratio = 0.15  # Portion of test data to move to validation
     
     # To create validation from train instead, set:
     # val_from_test_ratio = 0

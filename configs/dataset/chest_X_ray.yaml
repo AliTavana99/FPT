@@ -1,9 +1,10 @@
 name: covid
-data_path: /kaggle/working/COVID_IEEE
-preload_path: /kaggle/working/COVID_IEEE_preload_data
-save_path: /kaggle/working/COVID_IEEE_runs
+data_path: /kaggle/working/labeled-chest-xray-images
+preload_path: /kaggle/working/labeled-chest-xray-images_preload_data
+save_path: /kaggle/working/labeled-chest-xray-images_runs
 input_size: 512 # image resolution for the LPM
 num_classes: 3 # number of classes
-mean: [0.498341828584671, 0.4986386299133301, 0.49894729256629944] # 'auto' or a list of three numbers for RGB
-std: [0.2426202893257141, 0.24259139597415924, 0.242642343044281] # 'auto' or a list of three numbers for RGB
-learning_rate: 0.0001 # dataset-specific learning rate
+mean: [0.5] # 'auto' or a list of three numbers for RGB
+std: [0.5] # 'auto' or a list of three numbers for RGB
+learning_rate: 0.0005 # dataset-specific learning rate
+

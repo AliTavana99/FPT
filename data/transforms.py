@@ -11,7 +11,7 @@ def data_transforms(cfg):
         "random_crop"
     ]
     aug_args = cfg.data_augmentation_args
-    print(" - - - - - - -"*5)
+    print(" START_AUG - - - - - - -"*5)
     print(dir(aug_args))
     print(type(aug_args))
     print(f"actual value = {aug_args}")

@@ -1,7 +1,7 @@
 train:
   epochs: 20
   batch_size: 16
-  num_workers: 16
+  num_workers: 4
   criterion: cross_entropy # available criterions are list in 'criterion_args' below
   loss_weight: null # null / balance / dynamic / list with shape num_classes. Weights for loss function. Don't use it with weighted sampling!
   loss_weight_decay_rate: 0 # if loss_weights is dynamic, loss weight will decay from balance to equivalent weights

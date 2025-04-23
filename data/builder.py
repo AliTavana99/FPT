@@ -43,7 +43,7 @@ def generate_dataset_from_folder(cfg, train_transform, test_transform):
 
     train_path = os.path.join(data_path, 'train')
     test_path = os.path.join(data_path, 'test')
-    val_path = os.path.join(data_path, 'val')
+    val_path = os.path.join(data_path, 'validation')
 
     if cfg.dataset.preload_path:
         train_dataset = PreloadImageFolder(train_path, preload_path, train_transform)

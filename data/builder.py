@@ -18,11 +18,11 @@ def generate_dataset(cfg):
         cfg.dataset.mean = mean
         cfg.dataset.std = std
 
-    train_transform, test_transform = data_transforms(cfg)
+    # train_transform, test_transform = data_transforms(cfg)
     datasets = generate_dataset_from_folder(
         cfg,
-        train_transform,
-        test_transform,
+        # train_transform,
+        # test_transform,
     )
 
     print_dataset_info(datasets)
@@ -37,7 +37,7 @@ def auto_statistics(data_path, input_size, batch_size, num_workers):
     return mean_and_std(train_dataset, batch_size, num_workers)
 
 
-def generate_dataset_from_folder(cfg, train_transform, test_transform):
+def generate_dataset_from_folder(cfg)#, train_transform, test_transform):
     data_path = cfg.dataset.data_path
     preload_path = cfg.dataset.preload_path
 
@@ -46,16 +46,16 @@ def generate_dataset_from_folder(cfg, train_transform, test_transform):
     val_path = os.path.join(data_path, 'validation')
 
     if cfg.dataset.preload_path:
-        train_dataset = PreloadImageFolder(train_path, preload_path, train_transform)
-        test_dataset = PreloadImageFolder(test_path, preload_path, test_transform)
-        val_dataset = PreloadImageFolder(val_path, preload_path, test_transform)
+        train_dataset = PreloadImageFolder(train_path, preload_path)#, train_transform)
+        test_dataset = PreloadImageFolder(test_path, preload_path)#, test_transform)
+        val_dataset = PreloadImageFolder(val_path, preload_path)#, test_transform)
     else:
         train_lpm_transform, train_side_transform = train_transform
         test_lpm_transform, test_side_transform = test_transform
 
-        train_dataset = AsymetricImageFolder(train_path, train_lpm_transform, train_side_transform)
-        test_dataset = AsymetricImageFolder(test_path, test_lpm_transform, test_side_transform)
-        val_dataset = AsymetricImageFolder(val_path, test_lpm_transform, test_side_transform)
+        train_dataset = AsymetricImageFolder(train_path, train_lpm_transform)#, train_side_transform)
+        test_dataset = AsymetricImageFolder(test_path, test_lpm_transform)#, test_side_transform)
+        val_dataset = AsymetricImageFolder(val_path, test_lpm_transform)#, test_side_transform)
 
     dataset = train_dataset, test_dataset, val_dataset
     return dataset

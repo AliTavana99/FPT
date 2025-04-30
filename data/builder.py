@@ -37,7 +37,7 @@ def auto_statistics(data_path, input_size, batch_size, num_workers):
     return mean_and_std(train_dataset, batch_size, num_workers)
 
 
-def generate_dataset_from_folder(cfg)#, train_transform, test_transform):
+def generate_dataset_from_folder(cfg):#, train_transform, test_transform):
     data_path = cfg.dataset.data_path
     preload_path = cfg.dataset.preload_path
 

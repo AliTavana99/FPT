@@ -140,8 +140,8 @@ def count_files_in_dataset(dataset_path):
 
 def main():
     # Define paths
-    original_dataset = '/content/dataset'
-    target_dataset = '/content/dataset'
+    original_dataset = '/content/dataset/chest_xray'
+    target_dataset = '/content/dataset/splited_chest_xray'
     
     # Parameters
     # Change this to modify where validation data comes from

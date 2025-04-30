@@ -1,4 +1,4 @@
-name: covid
+name: chest_X_ray
 data_path: /content/dataset/splited_chest_xray
 preload_path: /content/output/preload_chest_xray
 save_path: /content/output/labeled_chest_xray

@@ -33,8 +33,21 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
 
         epoch_loss = 0
         estimator.reset()
-        progress = tqdm(enumerate(train_loader)) if cfg.base.progress else enumerate(train_loader)
-        for step, train_data in progress:
+        
+        # Create tqdm progress bar with total iterations and proper description
+        if cfg.base.progress:
+            progress = tqdm(
+                train_loader,
+                desc=f'Epoch {epoch + 1}/{cfg.train.epochs}',
+                total=len(train_loader),
+                unit='batch',
+                leave=True,
+                dynamic_ncols=True
+            )
+        else:
+            progress = train_loader
+            
+        for step, train_data in enumerate(progress):
             scheduler_step = epoch + step / len(train_loader)
             lr = adjust_learning_rate(cfg, optimizer, scheduler_step)
 
@@ -66,12 +79,17 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
             avg_loss = epoch_loss / (step + 1)
 
             estimator.update(y_pred, y)
-            message = 'epoch: [{} / {}], cls_loss: {:.6f}, lr: {:.4f}'.format(epoch + 1, cfg.train.epochs, avg_loss, lr)
-            if cfg.base.progress:
-                progress.set_description(message)
             
-        if not cfg.base.progress:
-            print(message)
+            # Update progress bar with detailed information
+            if cfg.base.progress:
+                progress.set_postfix({
+                    'Loss': f'{avg_loss:.6f}',
+                    'LR': f'{lr:.4f}'
+                })
+        
+        # Close progress bar at end of epoch
+        if cfg.base.progress:
+            progress.close()
 
         train_scores = estimator.get_scores(4)
         scores_txt = ', '.join(['{}: {}'.format(metric, score) for metric, score in train_scores.items()])

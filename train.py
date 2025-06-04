@@ -32,6 +32,7 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
             loss_function.weight = weight.to(device)
 
         epoch_loss = 0
+        steps = 0
         estimator.reset()
         progress = tqdm(enumerate(train_loader)) if cfg.base.progress else enumerate(train_loader)
         for step, train_data in progress:
@@ -63,8 +64,10 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
             optimizer.step()
 
             epoch_loss += loss.item()
+            steps += 1
+            
 
-        avg_loss = epoch_loss / (step + 1)
+        avg_loss = epoch_loss / steps
         estimator.update(y_pred, y)
         message = 'epoch: [{} / {}], cls_loss: {:.6f}, lr: {:.4f}'.format(epoch + 1, cfg.train.epochs, avg_loss, lr)
         if cfg.base.progress:

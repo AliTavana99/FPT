@@ -72,7 +72,19 @@ def preload(cfg, dataset, frozen_encoder, preload_path='./preload_data'):
         pin_memory=pin_memory
     )
 
-    for img_paths, X in tqdm(loader):
+    # Configure tqdm with proper parameters
+    progress = tqdm(
+        loader,
+        desc='Preloading data',
+        total=len(loader),
+        unit='batch',
+        leave=True,
+        dynamic_ncols=True
+    )
+    
+    total_processed = 0
+    
+    for img_paths, X in progress:
         img_names = [Path(path).stem for path in img_paths]
         X = X.to(cfg.base.device)
         with torch.no_grad():
@@ -87,7 +99,16 @@ def preload(cfg, dataset, frozen_encoder, preload_path='./preload_data'):
                 }
                 save_path = os.path.join(preload_path, img_names[i] + '.safetensors')
                 save_file(states, save_path)
-
+            
+            # Update progress information
+            total_processed += len(img_names)
+            progress.set_postfix({
+                'Images': total_processed,
+                'Batch size': len(img_names)
+            })
+    
+    progress.close()
+    print(f"Preloading completed: {total_processed} images processed")
 
 if __name__ == '__main__':
     main()

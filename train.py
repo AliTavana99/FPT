@@ -62,13 +62,12 @@ def train(cfg, frozen_encoder, model, train_dataset, val_dataset, estimator):
             nn.utils.clip_grad_norm_(model.parameters(), 1)
             optimizer.step()
 
-            epoch_loss += loss.item()
-            avg_loss = epoch_loss / (step + 1)
-
-            estimator.update(y_pred, y)
-            message = 'epoch: [{} / {}], cls_loss: {:.6f}, lr: {:.4f}'.format(epoch + 1, cfg.train.epochs, avg_loss, lr)
-            if cfg.base.progress:
-                progress.set_description(message)
+        epoch_loss += loss.item()
+        avg_loss = epoch_loss / (step + 1)
+        estimator.update(y_pred, y)
+        message = 'epoch: [{} / {}], cls_loss: {:.6f}, lr: {:.4f}'.format(epoch + 1, cfg.train.epochs, avg_loss, lr)
+        if cfg.base.progress:
+            progress.set_description(message)
             
         if not cfg.base.progress:
             print(message)

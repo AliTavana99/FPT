@@ -20,7 +20,7 @@ data_augmentation_args:
     prob: 1
     range: [0.2, 0.2]
   grayscale: # randomly convert image to grayscale
-    prob: 0.2
+    prob: 0.0
   gaussian_blur: # only available for torch version >= 1.7.1.
     prob: 0.2
     kernel_size: 7

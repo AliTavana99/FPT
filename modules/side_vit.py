@@ -367,6 +367,7 @@ class ViTModel(ViTPreTrainedModel):
         self.encoder = ViTEncoder(config)
         self.layernorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.pooler = ViTPooler(config) if add_pooling_layer else None
+        
         self.post_init()
     def get_input_embeddings(self) -> CNNPatchEmbeddings:
         return self.embeddings.patch_embeddings

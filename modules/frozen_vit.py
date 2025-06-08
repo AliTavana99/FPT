@@ -536,6 +536,8 @@ class ViTModel(ViTPreTrainedModel):
         self.encoder = ViTEncoder(config)
 
         self.layernorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
+        
+        
         self.pooler = ViTPooler(config) if add_pooling_layer else None
 
         # Initialize weights and apply final processing
@@ -626,6 +628,7 @@ class ViTModel(ViTPreTrainedModel):
 class ViTPooler(nn.Module):
     def __init__(self, config: ViTConfig):
         super().__init__()
+        
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.activation = nn.Tanh()
 

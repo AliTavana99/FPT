@@ -14,14 +14,28 @@ class CNNPatchEmbeddings(nn.Module):
         self.patch_size = patch_size
         self.num_channels = num_channels
         self.num_patches = num_patches
-
-        # CNN architecture: Multiple conv layers for feature extraction
+        dropout_rate=0.15
+        
         self.cnn = nn.Sequential(
-            nn.Conv2d(num_channels, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # Layer 1: Larger kernel for better feature extraction
+            nn.Conv2d(num_channels, 64, kernel_size=5, stride=1, padding=2),
+            nn.BatchNorm2d(64),
+            nn.GELU(),  # Better activation than ReLU
+            nn.Dropout2d(dropout_rate),
+            
+            # Layer 2: Standard 3x3 conv
             nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(128, hidden_size, kernel_size=patch_size, stride=patch_size),
+            nn.BatchNorm2d(128),
+            nn.GELU(),
+            nn.Dropout2d(dropout_rate),
+            
+            # Layer 3: 1x1 conv for channel reduction before final conv
+            nn.Conv2d(128, 64, kernel_size=1, stride=1, padding=0),
+            nn.BatchNorm2d(64),
+            nn.GELU(),
+            
+            # Final layer
+            nn.Conv2d(64, hidden_size, kernel_size=patch_size, stride=patch_size),
         )
 
     def forward(self, pixel_values: torch.Tensor, interpolate_pos_encoding: bool = False) -> torch.Tensor:
